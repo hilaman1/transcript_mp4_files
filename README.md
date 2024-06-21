@@ -4,8 +4,7 @@ This tool allows you to transcribe audio from a video file (MP4 format) into tex
 
 ## Requirements
 
-- Python 3.6+
-- `whisper` library
+- Python 3.8
 - `moviepy` library
 - `ffmpeg` (for `moviepy` to work)
 

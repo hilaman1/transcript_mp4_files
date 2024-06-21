@@ -11,11 +11,11 @@ This tool allows you to transcribe audio from a video file (MP4 format) into tex
 
 ## Installation
 
-1. Install Python 3.6 or higher from [python.org](https://www.python.org/).
+1. Install Python 3.8 from [python.org](https://www.python.org/).
 2. Install the required Python libraries:
 
     ```sh
-    pip install whisper moviepy
+    pip install moviepy
     ```
 
 3. Ensure you have `ffmpeg` installed. You can download it from [ffmpeg.org](https://ffmpeg.org/download.html) and follow the installation instructions for your operating system.

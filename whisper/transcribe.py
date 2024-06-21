@@ -39,6 +39,7 @@ def transcribe(
     model: "Whisper",
     audio: Union[str, np.ndarray, torch.Tensor],
     *,
+    text_file_path: str,
     verbose: Optional[bool] = None,
     temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
     compression_ratio_threshold: Optional[float] = 2.4,
@@ -234,10 +235,20 @@ def transcribe(
         initial_prompt_tokens = []
 
     def new_segment(
-        *, start: float, end: float, tokens: torch.Tensor, result: DecodingResult
+        *, start: float, end: float, tokens: torch.Tensor, result: DecodingResult, text_file_path: str
     ):
         tokens = tokens.tolist()
         text_tokens = [token for token in tokens if token < tokenizer.eot]
+        with open(fr"{text_file_path}", "a") as f:
+            #     write result["text"] to the file
+            # for any '.' in the text, replace it with a new line
+            try:
+                f.write(tokenizer.decode(text_tokens).replace(". ", ".\n"))
+            except:
+        #         if there is an error, print the error and continue
+                print(traceback.format_exc())
+        f.close()
+
         return {
             "seek": seek,
             "start": start,
@@ -346,6 +357,7 @@ def transcribe(
                             end=time_offset + end_timestamp_pos * time_precision,
                             tokens=sliced_tokens,
                             result=result,
+                            text_file_path=text_file_path,
                         )
                     )
                     last_slice = current_slice
@@ -378,6 +390,7 @@ def transcribe(
                         end=time_offset + duration,
                         tokens=tokens,
                         result=result,
+                        text_file_path=text_file_path,
                     )
                 )
                 seek += segment_size

@@ -33,7 +33,7 @@ language_code = input("Type the language code you want to use for transcription 
                       "Enter. \nFor English (which is the default), press Enter without typing anything: ")
 if language_code == "":
     language_code = None
-print("Transcribing...")
+print("\nTranscribing...")
 start = time.time()
 result = model.transcribe(mp3_file_path, text_file_path=text_file_path, language=language_code)
 end = time.time()

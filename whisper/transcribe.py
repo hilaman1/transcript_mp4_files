@@ -239,7 +239,7 @@ def transcribe(
     ):
         tokens = tokens.tolist()
         text_tokens = [token for token in tokens if token < tokenizer.eot]
-        with open(fr"{text_file_path}", "a") as f:
+        with open(fr"{text_file_path}", "a", encoding="utf-8") as f:
             #     write result["text"] to the file
             # for any '.' in the text, replace it with a new line
             try:

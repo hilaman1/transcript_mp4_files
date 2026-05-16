@@ -4,7 +4,12 @@ import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List
 
-import numba
+try:
+    import numba  # type: ignore
+    HAS_NUMBA = True
+except Exception:  # pragma: no cover - optional acceleration only
+    numba = None  # type: ignore
+    HAS_NUMBA = False
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -54,8 +59,7 @@ def median_filter(x: torch.Tensor, filter_width: int):
     return result
 
 
-@numba.jit(nopython=True)
-def backtrace(trace: np.ndarray):
+def _backtrace_impl(trace: np.ndarray):
     i = trace.shape[0] - 1
     j = trace.shape[1] - 1
     trace[0, :] = 2
@@ -79,8 +83,7 @@ def backtrace(trace: np.ndarray):
     return result[::-1, :].T
 
 
-@numba.jit(nopython=True, parallel=True)
-def dtw_cpu(x: np.ndarray):
+def _dtw_cpu_impl(x: np.ndarray):
     N, M = x.shape
     cost = np.ones((N + 1, M + 1), dtype=np.float32) * np.inf
     trace = -np.ones((N + 1, M + 1), dtype=np.float32)
@@ -103,6 +106,14 @@ def dtw_cpu(x: np.ndarray):
             trace[i, j] = t
 
     return backtrace(trace)
+
+# Bind accelerated versions if available; otherwise use pure NumPy fallbacks
+if HAS_NUMBA:
+    backtrace = numba.njit(cache=True)(_backtrace_impl)  # type: ignore[assignment]
+    dtw_cpu = numba.njit(cache=True, parallel=True)(_dtw_cpu_impl)  # type: ignore[assignment]
+else:
+    backtrace = _backtrace_impl  # type: ignore[assignment]
+    dtw_cpu = _dtw_cpu_impl  # type: ignore[assignment]
 
 
 def dtw_cuda(x, BLOCK_SIZE=1024):
